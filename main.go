@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"guny-world-backend/api"
+	"guny-world-backend/api/database"
 	"log"
 	"os"
 
@@ -16,8 +17,9 @@ func main() {
 	if err := godotenv.Load(".env"); err != nil {
 		log.Fatal("Error loading .env file")
 	}
-
+	
 	serverIp := os.Getenv("SERVER_IP")
+	database.InitDB()
 	app := fiber.New()
 	app.Use(recover.New())
 	app.Use(cors.New(cors.Config{
