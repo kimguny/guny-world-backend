@@ -8,6 +8,8 @@ import (
 )
 
 func Setting(app *fiber.App) {
-	app.Post("/register", register.Register)
-	app.Post("/login", login.Login)
+	api := app.Group("/api")
+
+	api.Post("/register", register.Register)
+	api.Post("/login", login.Login)
 }
