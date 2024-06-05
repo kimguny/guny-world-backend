@@ -5,6 +5,7 @@ import (
 	"guny-world-backend/api/database"
 	"log"
 	"regexp"
+	"unicode/utf8"
 
 	"github.com/gofiber/fiber/v2"
 	"golang.org/x/crypto/bcrypt"
@@ -16,6 +17,7 @@ func Register(c *fiber.Ctx) (err error) {
     type RequestQuery struct {
         UserId   string `json:"user_id"`
         Password string `json:"password"`
+        Nickname string `json:"nickname"`
     }
 
     // Body 파싱
@@ -48,6 +50,11 @@ func Register(c *fiber.Ctx) (err error) {
         return c.Status(400).JSON(fiber.Map{"error": "password must be at least 8 characters long"})
     }
 
+    // 닉네임 길이 확인 (한국어 기준 6글자, 영어 기준 12글자)
+    if utf8.RuneCountInString(requestQuery.Nickname) > 8 || len(requestQuery.Nickname) > 16 {
+        return c.Status(400).JSON(fiber.Map{"error": "nickname must be at most 6 characters long in Korean or 12 characters long in English"})
+    }
+
     // 비번 해쉬
     hashedPassword, err := hashPassword(requestQuery.Password)
     if err != nil {
@@ -56,7 +63,7 @@ func Register(c *fiber.Ctx) (err error) {
     }
 
     // 사용자 정보 저장
-    _, err = db.Exec("INSERT INTO Users (user_id, password) VALUES (?, ?)", requestQuery.UserId, hashedPassword)
+    _, err = db.Exec("INSERT INTO Users (user_id, password, nickname) VALUES (?, ?, ?)", requestQuery.UserId, hashedPassword, requestQuery.Nickname)
     if err != nil {
         log.Println("Error : ", err)
         return c.Status(500).JSON(fiber.Map{"error": err.Error()})

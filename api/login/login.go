@@ -51,15 +51,23 @@ func Login(c *fiber.Ctx) (err error) {
 
     jwtSecret := os.Getenv("JWT_SECRET_TOKEN")
 
+    // 해당 유저의 id 가져오기
+    var id string
+    err = db.Get(&id, "SELECT id FROM Users WHERE user_id = ?", requestQuery.UserId)
+    if err != nil {
+        log.Println("Error : ", err)
+        return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+    }
+
     // 엑세스 토큰 생성
-    accessToken, err := makeAccessToken(requestQuery.UserId, jwtSecret)
+    accessToken, err := makeAccessToken(id, jwtSecret)
     if err != nil {
         log.Println("Error : ", err)
         return c.Status(500).JSON(fiber.Map{"error": err.Error()})
     }
 
     // 리프레시 토큰 생성
-    refreshToken, err := makeRefreshToken(requestQuery.UserId, jwtSecret)
+    refreshToken, err := makeRefreshToken(id, jwtSecret)
     if err != nil {
         log.Println("Error : ", err)
         return c.Status(500).JSON(fiber.Map{"error": err.Error()})
