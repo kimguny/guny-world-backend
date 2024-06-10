@@ -43,12 +43,6 @@ func Login(c *fiber.Ctx) (err error) {
     }
 
     // JWT 키 불러오기
-    err = godotenv.Load(".env")
-    if err != nil {
-        log.Println("Error : ", err)
-        return c.Status(500).JSON(fiber.Map{"error": err.Error()})
-    }
-
     jwtSecret := os.Getenv("JWT_SECRET_TOKEN")
 
     // 해당 유저의 id 가져오기

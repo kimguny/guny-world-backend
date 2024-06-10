@@ -1,6 +1,7 @@
 package api
 
 import (
+	"guny-world-backend/api/handlers"
 	login "guny-world-backend/api/login"
 	register "guny-world-backend/api/register"
 
@@ -12,4 +13,6 @@ func Setting(app *fiber.App) {
 
 	api.Post("/register", register.Register)
 	api.Post("/login", login.Login)
+
+	api.Get("/user_info", handlers.GetUserInfo)
 }

@@ -26,6 +26,17 @@ func Register(c *fiber.Ctx) (err error) {
         return c.Status(400).JSON(fiber.Map{"error": err.Error()})
     }
 
+    // 각 필드가 비어 있는지 확인
+    if requestQuery.UserId == "" {
+        return c.Status(400).JSON(fiber.Map{"error": "user_id is required"})
+    }
+    if requestQuery.Password == "" {
+        return c.Status(400).JSON(fiber.Map{"error": "password is required"})
+    }
+    if requestQuery.Nickname == "" {
+        return c.Status(400).JSON(fiber.Map{"error": "nickname is required"})
+    }
+
     // 사용자 이름 중복 확인
     var count int
     err = db.Get(&count, "SELECT COUNT(*) FROM Users WHERE user_id = ?", requestQuery.UserId)
