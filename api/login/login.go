@@ -9,7 +9,6 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gofiber/fiber/v2"
-	"github.com/joho/godotenv"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -109,41 +108,4 @@ func makeRefreshToken(userId string, jwtSecret string) (refreshToken string, err
     }
 
     return refreshToken, nil
-}
-
-func RefreshAccessToken(c *fiber.Ctx) (err error) {
-    refreshToken := c.Query("refreshToken")
-
-    claims := &Claims{}
-    token, err := jwt.ParseWithClaims(refreshToken, claims, func(token *jwt.Token) (interface{}, error) {
-        return []byte(os.Getenv("JWT_SECRET_TOKEN")), nil
-    })
-
-    if err != nil {
-        log.Println("Error : ", err)
-        return c.Status(401).JSON(fiber.Map{"error": err.Error()})
-    }
-
-    if !token.Valid {
-        log.Println("Error : ", err)
-        return c.Status(401).JSON(fiber.Map{"error": "invalid token"})
-    }
-
-    err = godotenv.Load(".env")
-    if err != nil {
-        log.Println("Error : ", err)
-        return c.Status(500).JSON(fiber.Map{"error": err.Error()})
-    }
-
-    jwtSecret := os.Getenv("JWT_SECRET_TOKEN")
-
-    // 새로운 엑세스 토큰 생성
-    userId := claims.UserId
-    newAccessToken, err := makeAccessToken(userId, jwtSecret)
-    if err != nil {
-        log.Println("Error : ", err)
-        return c.Status(500).JSON(fiber.Map{"error": err.Error()})
-    }
-
-    return c.Status(200).JSON(fiber.Map{"accessToken": newAccessToken})
 }
