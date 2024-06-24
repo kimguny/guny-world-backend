@@ -24,7 +24,7 @@ func Chzzk(c *fiber.Ctx) (err error) {
 	}
 
 	// Fetch followers
-	followersURL := fmt.Sprintf("https://api.chzzk.naver.com/manage/v1/channels/%s/followers?page=0&size=50000&userNickname=", query.Id)
+	followersURL := fmt.Sprintf("https://api.chzzk.naver.com/manage/v1/channels/%s/followers?page=0&size=10000&userNickname=", query.Id)
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", followersURL, nil)
 	if err != nil {
@@ -85,7 +85,7 @@ func Chzzk(c *fiber.Ctx) (err error) {
 	}
 
 	// Fetch followings
-	followingsURL := "https://api.chzzk.naver.com/service/v1/channels/followings?size=50000&page=0"
+	followingsURL := "https://api.chzzk.naver.com/service/v1/channels/followings?size=500&page=0"
 	req, err = http.NewRequest("GET", followingsURL, nil)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
