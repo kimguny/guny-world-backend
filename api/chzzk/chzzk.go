@@ -23,122 +23,123 @@ func Chzzk(c *fiber.Ctx) (err error) {
 		})
 	}
 
-	// Fetch followers
-	followersURL := fmt.Sprintf("https://api.chzzk.naver.com/manage/v1/channels/%s/followers?page=0&size=10000&userNickname=", query.Id)
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", followersURL, nil)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "failed to create request",
-		})
-	}
-
 	cookie := fmt.Sprintf("NID_AUT=%s; NID_SES=%s", query.NID_AUT, query.NID_SES)
-	req.Header.Add("Cookie", cookie)
-	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3")
-
-	respFollowers, err := client.Do(req)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "request failed",
-		})
-	}
-	defer respFollowers.Body.Close()
-
-	bodyFollowers, err := ioutil.ReadAll(respFollowers.Body)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "failed to read response body",
-		})
+	headers := map[string]string{
+		"Cookie":     cookie,
+		"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
 	}
 
-	var jsonResponseFollowers map[string]interface{}
-	if err := json.Unmarshal(bodyFollowers, &jsonResponseFollowers); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "failed to parse response body",
-		})
-	}
-
-	contentFollowers, ok := jsonResponseFollowers["content"].(map[string]interface{})
-	if !ok {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "unexpected response format",
-		})
-	}
-
-	dataFollowers, ok := contentFollowers["data"].([]interface{})
-	if !ok {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "unexpected response format",
-		})
-	}
-
+	// Fetch followers
 	var followers []string
-	for _, item := range dataFollowers {
-		user, ok := item.(map[string]interface{})["user"].(map[string]interface{})
-		if ok {
-			nickname, ok := user["nickname"].(string)
+	for page := 0; page < 5; page++ {
+		followersURL := fmt.Sprintf("https://api.chzzk.naver.com/manage/v1/channels/%s/followers?page=%d&size=10000&userNickname=", query.Id, page)
+		req, err := http.NewRequest("GET", followersURL, nil)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "failed to create request",
+			})
+		}
+
+		req.Header.Set("Cookie", headers["Cookie"])
+		req.Header.Set("User-Agent", headers["User-Agent"])
+
+		respFollowers, err := client.Do(req)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "request failed",
+			})
+		}
+		defer respFollowers.Body.Close()
+
+		bodyFollowers, err := ioutil.ReadAll(respFollowers.Body)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "failed to read response body",
+			})
+		}
+
+		var jsonResponseFollowers map[string]interface{}
+		if err := json.Unmarshal(bodyFollowers, &jsonResponseFollowers); err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "failed to parse response body",
+			})
+		}
+
+		contentFollowers, ok := jsonResponseFollowers["content"].(map[string]interface{})
+		if !ok || len(contentFollowers) == 0 {
+			break // 비어있는 경우 루프 중지
+		}
+
+		dataFollowers, ok := contentFollowers["data"].([]interface{})
+		if !ok || len(dataFollowers) == 0 {
+			break // 비어있는 경우 루프 중지
+		}
+
+		for _, item := range dataFollowers {
+			user, ok := item.(map[string]interface{})["user"].(map[string]interface{})
 			if ok {
-				followers = append(followers, nickname)
+				nickname, ok := user["nickname"].(string)
+				if ok {
+					followers = append(followers, nickname)
+				}
 			}
 		}
 	}
 
 	// Fetch followings
-	followingsURL := "https://api.chzzk.naver.com/service/v1/channels/followings?size=500&page=0"
-	req, err = http.NewRequest("GET", followingsURL, nil)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "failed to create request",
-		})
-	}
-
-	req.Header.Set("Cookie", cookie)
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3")
-
-	respFollowings, err := client.Do(req)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "request failed",
-		})
-	}
-	defer respFollowings.Body.Close()
-
-	bodyFollowings, err := ioutil.ReadAll(respFollowings.Body)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "failed to read response body",
-		})
-	}
-
-	var jsonResponseFollowings map[string]interface{}
-	if err := json.Unmarshal(bodyFollowings, &jsonResponseFollowings); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "failed to parse response body",
-		})
-	}
-
-	contentFollowings, ok := jsonResponseFollowings["content"].(map[string]interface{})
-	if !ok {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "unexpected response format",
-		})
-	}
-
-	followingList, ok := contentFollowings["followingList"].([]interface{})
-	if !ok {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "unexpected response format",
-		})
-	}
-
 	var followings []string
-	for _, item := range followingList {
-		channel, ok := item.(map[string]interface{})["channel"].(map[string]interface{})
-		if ok {
-			channelName, ok := channel["channelName"].(string)
+	for page := 0; page < 100; page++ {
+		followingsURL := fmt.Sprintf("https://api.chzzk.naver.com/service/v1/channels/followings?size=500&page=%d", page)
+		req, err := http.NewRequest("GET", followingsURL, nil)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "failed to create request",
+			})
+		}
+
+		req.Header.Set("Cookie", headers["Cookie"])
+		req.Header.Set("User-Agent", headers["User-Agent"])
+
+		respFollowings, err := client.Do(req)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "request failed",
+			})
+		}
+		defer respFollowings.Body.Close()
+
+		bodyFollowings, err := ioutil.ReadAll(respFollowings.Body)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "failed to read response body",
+			})
+		}
+
+		var jsonResponseFollowings map[string]interface{}
+		if err := json.Unmarshal(bodyFollowings, &jsonResponseFollowings); err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "failed to parse response body",
+			})
+		}
+
+		contentFollowings, ok := jsonResponseFollowings["content"].(map[string]interface{})
+		if !ok || len(contentFollowings) == 0 {
+			break // 비어있는 경우 루프 중지
+		}
+
+		followingList, ok := contentFollowings["followingList"].([]interface{})
+		if !ok || len(followingList) == 0 {
+			break // 비어있는 경우 루프 중지
+		}
+
+		for _, item := range followingList {
+			channel, ok := item.(map[string]interface{})["channel"].(map[string]interface{})
 			if ok {
-				followings = append(followings, channelName)
+				channelName, ok := channel["channelName"].(string)
+				if ok {
+					followings = append(followings, channelName)
+				}
 			}
 		}
 	}
