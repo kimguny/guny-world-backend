@@ -39,7 +39,7 @@ func Register(c *fiber.Ctx) (err error) {
 
     // 사용자 이름 중복 확인
     var count int
-    err = db.Get(&count, "SELECT COUNT(*) FROM Users WHERE user_id = ?", requestQuery.UserId)
+    err = db.Get(&count, "SELECT COUNT(*) FROM users WHERE user_id = ?", requestQuery.UserId)
     if err != nil {
         log.Println("Error : ", err)
         return c.Status(500).JSON(fiber.Map{"error": err.Error()})
@@ -74,7 +74,7 @@ func Register(c *fiber.Ctx) (err error) {
     }
 
     // 사용자 정보 저장
-    _, err = db.Exec("INSERT INTO Users (user_id, password, nickname) VALUES (?, ?, ?)", requestQuery.UserId, hashedPassword, requestQuery.Nickname)
+    _, err = db.Exec("INSERT INTO users (user_id, password, nickname) VALUES (?, ?, ?)", requestQuery.UserId, hashedPassword, requestQuery.Nickname)
     if err != nil {
         log.Println("Error : ", err)
         return c.Status(500).JSON(fiber.Map{"error": err.Error()})

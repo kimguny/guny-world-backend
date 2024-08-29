@@ -38,7 +38,7 @@ func GetUserInfo(c *fiber.Ctx) (err error) {
 	// 사용자 닉네임 조회
 
 	var nickname string
-	err = db.QueryRow("SELECT nickname FROM Users WHERE id = ?", userID).Scan(&nickname)
+	err = db.QueryRow("SELECT nickname FROM users WHERE id = ?", userID).Scan(&nickname)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not fetch nickname"})
 	}

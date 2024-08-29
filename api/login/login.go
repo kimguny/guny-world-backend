@@ -29,7 +29,7 @@ func Login(c *fiber.Ctx) (err error) {
 
     // 유저 아이디의 대한 비번 정보 가져오기
     var password string
-    err = db.Get(&password, "SELECT password FROM Users WHERE user_id = ?", requestQuery.UserId)
+    err = db.Get(&password, "SELECT password FROM users WHERE user_id = ?", requestQuery.UserId)
     if err != nil {
         log.Println("Error : ", err)
         return c.Status(500).JSON(fiber.Map{"error": err.Error()})
@@ -46,7 +46,7 @@ func Login(c *fiber.Ctx) (err error) {
 
     // 해당 유저의 id 가져오기
     var id string
-    err = db.Get(&id, "SELECT id FROM Users WHERE user_id = ?", requestQuery.UserId)
+    err = db.Get(&id, "SELECT id FROM users WHERE user_id = ?", requestQuery.UserId)
     if err != nil {
         log.Println("Error : ", err)
         return c.Status(500).JSON(fiber.Map{"error": err.Error()})
