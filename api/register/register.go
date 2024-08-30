@@ -23,31 +23,31 @@ func Register(c *fiber.Ctx) (err error) {
     // Body 파싱
     var requestQuery RequestQuery
     if err := c.BodyParser(&requestQuery); err != nil {
-        return c.Status(400).JSON(fiber.Map{"error": err.Error()})
+        return c.Status(400).JSON(fiber.Map{"message": err.Error()})
     }
 
     // 각 필드가 비어 있는지 확인
     if requestQuery.UserId == "" {
-        return c.Status(400).JSON(fiber.Map{"error": "user_id is required"})
+        return c.Status(400).JSON(fiber.Map{"message": "아이디 값이 존재하지 않습니다."})
     }
     if requestQuery.Password == "" {
-        return c.Status(400).JSON(fiber.Map{"error": "password is required"})
+        return c.Status(400).JSON(fiber.Map{"message": "비밀번호 값이 존재하지 않습니다."})
     }
     if requestQuery.Nickname == "" {
-        return c.Status(400).JSON(fiber.Map{"error": "nickname is required"})
+        return c.Status(400).JSON(fiber.Map{"message": "닉네임 값이 존재하지 않습니다."})
     }
 
     // 사용자 이름 중복 확인
     var count int
     err = db.Get(&count, "SELECT COUNT(*) FROM users WHERE user_id = ?", requestQuery.UserId)
     if err != nil {
-        log.Println("Error : ", err)
-        return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+        log.Println("Error : server internal error")
+        return c.Status(500).JSON(fiber.Map{"message": "server internal error"})
     }
 
     if count > 0 {
-        log.Println("Error : user already exists")
-        return c.Status(400).JSON(fiber.Map{"error": "user already exists"})
+        log.Println("Error : 중복된 아이디 입니다.")
+        return c.Status(400).JSON(fiber.Map{"message": "중복된 아이디 입니다."})
     }
 
     // UserId가 이메일 형태인지 확인
