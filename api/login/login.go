@@ -124,7 +124,7 @@ func NaverLogin(c *fiber.Ctx) error {
 	// 네이버 Client ID와 Client Secret을 환경변수에서 가져옵니다.
 	clientID := os.Getenv("NAVER_CLIENT_ID")
 	clientSecret := os.Getenv("NAVER_CLIENT_SECRET")
-	redirectURI := "https://game.gunynote.com/api/naver/callback"
+	redirectURI := "https://game.gunynote.com/naver/callback"
 
 	// 액세스 토큰을 요청하기 위한 URL을 만듭니다.
 	tokenURL := "https://nid.naver.com/oauth2.0/token"

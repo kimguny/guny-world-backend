@@ -11,11 +11,12 @@ import (
 )
 
 func Setting(app *fiber.App) {
+	app.Group("/naver/callback", login.NaverLogin)
+
 	api := app.Group("/api")
 
 	api.Post("/register", register.Register)
 	api.Post("/login", login.Login)
-	api.Get("/naver/callback", login.NaverLogin)
 	api.Post("/reissue", reissue.Reissue)
 
 	api.Get("/user_info", handlers.GetUserInfo)
