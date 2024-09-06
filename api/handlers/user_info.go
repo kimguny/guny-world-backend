@@ -37,21 +37,24 @@ func GetUserInfo(c *fiber.Ctx) (err error) {
 	}
 
 	// 사용자 닉네임 조회
+	loginType := c.Cookies("loginType")
+	if loginType == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Missing loginType"})
+	}
 
 	var nickname string
-	err = db.QueryRow("SELECT nickname FROM users WHERE user_id = ?", userID).Scan(&nickname)
-	if err == sql.ErrNoRows {
+	if loginType == "naver" {
 		err = db.QueryRow("SELECT nickname FROM naver_user_info WHERE user_id = ?", userID).Scan(&nickname)
-		if err == sql.ErrNoRows {
-			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "User not found"})
-		} else if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Database error"})
-		}
+	} else {
+		err = db.QueryRow("SELECT nickname FROM users WHERE user_id = ?", userID).Scan(&nickname)
+	}
+
+	if err == sql.ErrNoRows {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "User not found"})
 	} else if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Database error"})
 	}
 
-	// 닉네임을 JSON 응답으로 반환
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"nickname": nickname})
 }
 
