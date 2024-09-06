@@ -223,20 +223,9 @@ func NaverLogin(c *fiber.Ctx) error {
 		}
 	}
 
-	// 사용자에게 JWT 발급
-	jwtSecret := os.Getenv("JWT_SECRET_TOKEN")
-	accessToken, err := makeAccessToken(userInfo.Response.Email, jwtSecret)
-	if err != nil {
-		log.Println("Error creating access token:", err)
-		return c.Status(500).JSON(fiber.Map{"error": "Failed to create access token"})
-	}
-
-	refreshToken, err := makeRefreshToken(userInfo.Response.Email, jwtSecret)
-	if err != nil {
-		log.Println("Error creating refresh token:", err)
-		return c.Status(500).JSON(fiber.Map{"error": "Failed to create refresh token"})
-	}
-
 	// 클라이언트에게 JWT 토큰 반환
-	return c.Status(200).JSON(fiber.Map{"message": "Naver login successful!", "accessToken": accessToken, "refreshToken": refreshToken})
+	return c.Status(200).JSON(fiber.Map{
+		"accessToken": tokenResponse.AccessToken,
+		"refreshToken": tokenResponse.RefreshToken,
+	})
 }
