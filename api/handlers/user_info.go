@@ -37,7 +37,7 @@ func GetUserInfo(c *fiber.Ctx) (err error) {
 	}
 
 	var nickname string
-	err = db.QueryRow("SELECT nickname FROM users WHERE user_id = ?", userID).Scan(&nickname)
+	err = db.QueryRow("SELECT nickname FROM users WHERE id = ?", userID).Scan(&nickname)
 	if err == sql.ErrNoRows {
 		err = db.QueryRow("SELECT nickname FROM naver_user_info WHERE user_id = ?", userID).Scan(&nickname)
 		if err == sql.ErrNoRows {
