@@ -27,50 +27,54 @@ func Login(c *fiber.Ctx) (err error) {
     // Body 파싱
     var requestQuery RequestQuery
     if err := c.BodyParser(&requestQuery); err != nil {
-        log.Println("Error : ", err)
-        return c.Status(400).JSON(fiber.Map{"error": err.Error()})
+        log.Println("Body 파싱 에러: ", err)
+        return c.Status(400).JSON(fiber.Map{"error": "값을 입력해 주세요."})
     }
 
     // 유저 아이디의 대한 비번 정보 가져오기
     var password string
     err = db.Get(&password, "SELECT password FROM users WHERE user_id = ?", requestQuery.UserId)
     if err != nil {
-        log.Println("Error : ", err)
-        return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+        log.Println("데이터베이스 조회 에러: ", err)
+        return c.Status(500).JSON(fiber.Map{"error": "유저 정보를 찾을 수 없습니다."})
     }
 
     // 비밀번호 검증
     if err := bcrypt.CompareHashAndPassword([]byte(password), []byte(requestQuery.Password)); err != nil {
-        log.Println("Error : ", err)
-        return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+        log.Println("비밀번호 검증 실패: ", err)
+        return c.Status(500).JSON(fiber.Map{"error": "비밀번호가 일치하지 않습니다."})
     }
 
     // JWT 키 불러오기
-    jwtSecret := os.Getenv("JWT_SECRET_TOKEN")
+	jwtSecret := os.Getenv("JWT_SECRET_TOKEN")
+    if jwtSecret == "" {
+        log.Println("JWT 시크릿 키가 설정되지 않았습니다.")
+        return c.Status(500).JSON(fiber.Map{"error": "서버 설정 오류입니다. 관리자에게 문의하세요."})
+    }
 
     // 해당 유저의 id 가져오기
     var id string
     err = db.Get(&id, "SELECT id FROM users WHERE user_id = ?", requestQuery.UserId)
     if err != nil {
-        log.Println("Error : ", err)
-        return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+        log.Println("데이터베이스 조회 에러: ", err)
+        return c.Status(500).JSON(fiber.Map{"error": "유저 정보를 가져오는 데 실패했습니다."})
     }
 
     // 엑세스 토큰 생성
     accessToken, err := makeAccessToken(id, jwtSecret)
     if err != nil {
-        log.Println("Error : ", err)
-        return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+        log.Println("엑세스 토큰 생성 실패: ", err)
+        return c.Status(500).JSON(fiber.Map{"error": "토큰 생성에 실패했습니다."})
     }
 
     // 리프레시 토큰 생성
     refreshToken, err := makeRefreshToken(id, jwtSecret)
     if err != nil {
-        log.Println("Error : ", err)
-        return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+        log.Println("리프레시 토큰 생성 실패: ", err)
+        return c.Status(500).JSON(fiber.Map{"error": "토큰 생성에 실패했습니다."})
     }
 
-    return c.Status(200).JSON(fiber.Map{"message": "Success login!", "accessToken": accessToken, "refreshToken": refreshToken})
+    return c.Status(200).JSON(fiber.Map{"message": "로그인 성공!", "accessToken": accessToken, "refreshToken": refreshToken})
 }
 
 type Claims struct {

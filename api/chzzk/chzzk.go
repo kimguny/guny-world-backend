@@ -19,7 +19,7 @@ func Chzzk(c *fiber.Ctx) (err error) {
 	query := new(RequestQuery)
 	if err := c.BodyParser(query); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "cannot parse JSON",
+			"error": "JSON 데이터를 파싱할 수 없습니다.",
 		})
 	}
 
@@ -37,7 +37,7 @@ func Chzzk(c *fiber.Ctx) (err error) {
 		req, err := http.NewRequest("GET", followersURL, nil)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "failed to create request",
+				"error": "요청 생성에 실패했습니다.",
 			})
 		}
 
@@ -47,7 +47,7 @@ func Chzzk(c *fiber.Ctx) (err error) {
 		respFollowers, err := client.Do(req)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "request failed",
+				"error": "요청에 실패했습니다.",
 			})
 		}
 		defer respFollowers.Body.Close()
@@ -55,14 +55,14 @@ func Chzzk(c *fiber.Ctx) (err error) {
 		bodyFollowers, err := ioutil.ReadAll(respFollowers.Body)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "failed to read response body",
+				"error": "응답 본문을 읽는 데 실패했습니다.",
 			})
 		}
 
 		var jsonResponseFollowers map[string]interface{}
 		if err := json.Unmarshal(bodyFollowers, &jsonResponseFollowers); err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "failed to parse response body",
+				"error": "응답 본문을 파싱하는 데 실패했습니다.",
 			})
 		}
 
@@ -94,7 +94,7 @@ func Chzzk(c *fiber.Ctx) (err error) {
 		req, err := http.NewRequest("GET", followingsURL, nil)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "failed to create request",
+				"error": "요청 생성에 실패했습니다.",
 			})
 		}
 
@@ -104,7 +104,7 @@ func Chzzk(c *fiber.Ctx) (err error) {
 		respFollowings, err := client.Do(req)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "request failed",
+				"error": "요청에 실패했습니다.",
 			})
 		}
 		defer respFollowings.Body.Close()
@@ -112,14 +112,14 @@ func Chzzk(c *fiber.Ctx) (err error) {
 		bodyFollowings, err := ioutil.ReadAll(respFollowings.Body)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "failed to read response body",
+				"error": "응답 본문을 읽는 데 실패했습니다.",
 			})
 		}
 
 		var jsonResponseFollowings map[string]interface{}
 		if err := json.Unmarshal(bodyFollowings, &jsonResponseFollowings); err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "failed to parse response body",
+				"error": "응답 본문을 파싱하는 데 실패했습니다.",
 			})
 		}
 
