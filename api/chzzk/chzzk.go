@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -33,6 +34,7 @@ func Chzzk(c *fiber.Ctx) (err error) {
 	// Fetch followers
 	var followers []string
 	for page := 0; page < 5; page++ {
+		time.Sleep(300 * time.Millisecond)
 		followersURL := fmt.Sprintf("https://api.chzzk.naver.com/manage/v1/channels/%s/followers?page=%d&size=10000&userNickname=", query.Id, page)
 		req, err := http.NewRequest("GET", followersURL, nil)
 		if err != nil {
@@ -90,6 +92,7 @@ func Chzzk(c *fiber.Ctx) (err error) {
 	// Fetch followings
 	var followings []string
 	for page := 0; page < 100; page++ {
+		time.Sleep(300 * time.Millisecond)
 		followingsURL := fmt.Sprintf("https://api.chzzk.naver.com/service/v1/channels/followings?size=500&page=%d", page)
 		req, err := http.NewRequest("GET", followingsURL, nil)
 		if err != nil {
